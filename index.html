@@ -1,1 +1,912 @@
-hello world!
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Irrigang — Make Every Watering Just Right</title>
+<style>
+  :root{
+    --bg:#060d0a;
+    --bg-2:#0a1410;
+    --panel:rgba(255,255,255,.035);
+    --border:rgba(255,255,255,.09);
+    --text:#f0f5f2;
+    --muted:#8fa39a;
+    --brand:#34d399;
+    --brand-2:#22d3ee;
+    --lime:#a3e635;
+    --radius:20px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;scroll-padding-top:88px;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    line-height:1.65;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;text-decoration:none;}
+  ul{list-style:none;}
+  .container{width:min(1140px,calc(100% - 48px));margin-inline:auto;}
+
+  /* ---------- 背景光斑 ---------- */
+  .glow{position:fixed;border-radius:50%;filter:blur(100px);pointer-events:none;z-index:0;opacity:.45;}
+  .glow-1{width:600px;height:600px;background:rgba(52,211,153,.28);top:-240px;left:-180px;}
+  .glow-2{width:520px;height:520px;background:rgba(34,211,238,.16);top:42%;right:-220px;}
+  .glow-3{width:460px;height:460px;background:rgba(163,230,53,.1);bottom:-180px;left:22%;}
+
+  /* ---------- 导航 ---------- */
+  .nav{position:fixed;top:0;left:0;right:0;z-index:50;transition:background .35s,border-color .35s,backdrop-filter .35s;border-bottom:1px solid transparent;}
+  .nav.scrolled{background:rgba(6,13,10,.82);backdrop-filter:blur(18px);border-bottom-color:var(--border);}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:70px;position:relative;}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px;letter-spacing:-.02em;}
+  .logo-mark{
+    width:31px;height:31px;border-radius:10px;
+    background:linear-gradient(135deg,var(--brand),var(--brand-2));
+    box-shadow:0 6px 20px rgba(52,211,153,.45);
+    display:grid;place-items:center;flex:none;
+  }
+  .logo-mark svg{width:17px;height:17px;stroke:#06120d;fill:none;stroke-width:2.2;}
+  .nav-links{display:flex;align-items:center;gap:30px;font-size:15px;font-weight:500;}
+  .nav-links > a:not(.btn){color:var(--muted);transition:color .2s;}
+  .nav-links > a:not(.btn):hover{color:var(--text);}
+
+  .lang-btn{
+    background:rgba(255,255,255,.05);border:1px solid var(--border);
+    color:var(--text);font-weight:700;font-size:13px;letter-spacing:.02em;
+    padding:7px 15px;border-radius:999px;cursor:pointer;
+    transition:background .2s,border-color .2s,transform .2s;
+    font-family:inherit;white-space:nowrap;
+  }
+  .lang-btn:hover{background:rgba(255,255,255,.1);border-color:rgba(52,211,153,.45);transform:translateY(-1px);}
+
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    padding:13px 26px;border-radius:999px;font-weight:700;font-size:15px;
+    border:1px solid transparent;cursor:pointer;
+    transition:transform .25s,box-shadow .25s,background .25s,border-color .25s;
+    white-space:nowrap;font-family:inherit;
+  }
+  .btn-sm{padding:9px 18px;font-size:14px;}
+  .btn-primary{
+    background:linear-gradient(135deg,var(--brand),var(--brand-2));
+    color:#05120c;
+    box-shadow:0 10px 30px -8px rgba(52,211,153,.7);
+  }
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 16px 40px -8px rgba(52,211,153,.85);}
+  .btn-ghost{
+    background:rgba(255,255,255,.04);border-color:var(--border);color:var(--text);
+    backdrop-filter:blur(10px);
+  }
+  .btn-ghost:hover{background:rgba(255,255,255,.09);transform:translateY(-2px);}
+
+  .burger{display:none;flex-direction:column;gap:5px;background:none;border:0;padding:8px;cursor:pointer;}
+  .burger span{display:block;width:22px;height:2px;background:var(--text);border-radius:2px;transition:.3s;}
+
+  /* ---------- Hero ---------- */
+  .hero{position:relative;z-index:1;padding:146px 0 84px;}
+  .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:54px;align-items:center;}
+  .pill{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:7px 16px 7px 11px;border-radius:999px;
+    background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.32);
+    font-size:13px;font-weight:600;color:#6ee7b7;margin-bottom:24px;
+  }
+  .pill .dot-live{width:7px;height:7px;border-radius:50%;background:var(--brand);box-shadow:0 0 10px var(--brand);animation:pulse 2s infinite;flex:none;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+  h1{font-size:clamp(36px,5vw,60px);line-height:1.1;letter-spacing:-.03em;font-weight:800;margin-bottom:20px;}
+  .grad{
+    background:linear-gradient(115deg,#6ee7b7 0%,#22d3ee 48%,#a3e635 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .hero p.lead{font-size:clamp(16px,1.6vw,18px);color:var(--muted);max-width:520px;margin-bottom:32px;}
+  .hero-actions{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:32px;}
+  .trust{display:flex;align-items:center;gap:22px;flex-wrap:wrap;font-size:13.5px;color:var(--muted);}
+  .trust b{color:var(--text);}
+  .trust .sep{width:1px;height:14px;background:var(--border);}
+
+  /* ---------- 手机模型 ---------- */
+  .hero-visual{position:relative;display:flex;justify-content:center;}
+  .hero-visual::before{
+    content:'';position:absolute;width:430px;height:430px;border-radius:50%;
+    background:radial-gradient(circle,rgba(52,211,153,.35),transparent 68%);
+    filter:blur(28px);top:50%;left:50%;transform:translate(-50%,-50%);
+  }
+  .phone{
+    position:relative;width:286px;height:582px;border-radius:46px;padding:11px;
+    background:linear-gradient(160deg,#23302b,#070f0b 62%);
+    border:1px solid rgba(255,255,255,.13);
+    box-shadow:0 50px 100px -30px rgba(0,0,0,.95),0 0 0 1px rgba(0,0,0,.55) inset;
+    animation:float 7.5s ease-in-out infinite;
+  }
+  @keyframes float{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-15px) rotate(1deg)}}
+  .phone::after{
+    content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);
+    width:106px;height:23px;background:#070f0b;border-radius:0 0 15px 15px;z-index:3;
+  }
+  .screen{
+    position:relative;width:100%;height:100%;border-radius:36px;overflow:hidden;
+    background:linear-gradient(180deg,#0b1611,#070d0a);
+    padding:38px 18px 18px;display:flex;flex-direction:column;
+  }
+  .s-top{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--muted);font-weight:600;margin-bottom:16px;}
+  .s-farm{display:flex;align-items:center;gap:6px;color:var(--text);font-size:12px;font-weight:700;}
+  .s-farm i{width:6px;height:6px;border-radius:50%;background:var(--brand);box-shadow:0 0 8px var(--brand);display:block;flex:none;}
+
+  .ring{
+    width:150px;height:150px;border-radius:50%;margin:16px auto 14px;position:relative;
+    background:conic-gradient(#34d399 0% 68%,#22d3ee 68% 86%,rgba(255,255,255,.07) 86% 100%);
+    display:grid;place-items:center;
+    box-shadow:0 0 46px -10px rgba(52,211,153,.7);
+  }
+  .ring::before{content:'';position:absolute;inset:11px;border-radius:50%;background:#0a1410;}
+  .ring-inner{position:relative;text-align:center;}
+  .ring-val{font-size:27px;font-weight:800;letter-spacing:-.03em;}
+  .ring-label{font-size:10px;color:var(--muted);letter-spacing:.1em;margin-top:-2px;}
+
+  .metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:14px;}
+  .metric{
+    background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.06);
+    border-radius:11px;padding:8px 6px;text-align:center;
+  }
+  .metric b{display:block;font-size:13px;font-weight:800;letter-spacing:-.02em;}
+  .metric span{font-size:9px;color:var(--muted);}
+
+  .s-list{display:flex;flex-direction:column;gap:8px;margin-top:auto;}
+  .s-item{
+    display:flex;align-items:center;gap:9px;font-size:11.5px;
+    background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.06);
+    padding:10px 12px;border-radius:12px;
+  }
+  .s-item .dot{width:7px;height:7px;border-radius:50%;flex:none;}
+  .s-item .dot.on{background:var(--brand);box-shadow:0 0 8px var(--brand);}
+  .s-item .dot.off{background:#4b5563;}
+  .s-item .dot.warn{background:#fbbf24;box-shadow:0 0 8px #fbbf24;}
+  .s-item .tag{margin-left:auto;font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:5px;white-space:nowrap;}
+  .tag.on{color:#6ee7b7;background:rgba(52,211,153,.14);}
+  .tag.off{color:#8b98a3;background:rgba(255,255,255,.06);}
+  .s-action{
+    margin-top:10px;text-align:center;padding:11px;border-radius:13px;
+    background:linear-gradient(135deg,var(--brand),var(--brand-2));
+    color:#05120c;font-size:12.5px;font-weight:800;letter-spacing:.02em;
+  }
+
+  /* ---------- 数据条 ---------- */
+  .stats{position:relative;z-index:1;padding:26px 0 6px;}
+  .stats-grid{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:1px;
+    background:var(--border);border:1px solid var(--border);
+    border-radius:var(--radius);overflow:hidden;
+  }
+  .stat{background:#08110d;padding:30px 18px;text-align:center;}
+  .stat b{
+    display:block;font-size:clamp(24px,3.2vw,36px);font-weight:800;letter-spacing:-.03em;
+    background:linear-gradient(135deg,#fff,#6ee7b7);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .stat span{font-size:13px;color:var(--muted);}
+
+  /* ---------- 通用 section ---------- */
+  section{position:relative;z-index:1;padding:96px 0;}
+  .sec-head{text-align:center;max-width:680px;margin:0 auto 56px;}
+  .sec-tag{
+    display:inline-block;font-size:12.5px;font-weight:700;letter-spacing:.16em;
+    text-transform:uppercase;color:#6ee7b7;margin-bottom:15px;
+  }
+  h2{font-size:clamp(27px,3.6vw,42px);line-height:1.16;letter-spacing:-.03em;font-weight:800;margin-bottom:15px;}
+  .sec-head p{color:var(--muted);font-size:16.5px;}
+
+  /* ---------- 基础功能卡 ---------- */
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+  .card{
+    position:relative;padding:30px 26px;border-radius:var(--radius);
+    background:var(--panel);border:1px solid var(--border);
+    transition:transform .3s,border-color .3s,background .3s;
+    overflow:hidden;
+  }
+  .card::before{
+    content:'';position:absolute;width:220px;height:220px;border-radius:50%;
+    background:radial-gradient(circle,rgba(52,211,153,.22),transparent 70%);
+    top:-110px;right:-90px;opacity:0;transition:opacity .35s;
+  }
+  .card:hover{transform:translateY(-6px);border-color:rgba(52,211,153,.42);background:rgba(255,255,255,.055);}
+  .card:hover::before{opacity:1;}
+  .card > *{position:relative;}
+  .icon{
+    width:48px;height:48px;border-radius:14px;display:grid;place-items:center;margin-bottom:18px;
+    background:linear-gradient(135deg,rgba(52,211,153,.2),rgba(34,211,238,.12));
+    border:1px solid rgba(52,211,153,.28);
+  }
+  .icon svg{width:23px;height:23px;stroke:#6ee7b7;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+  .card h3{font-size:17.5px;font-weight:700;margin-bottom:8px;letter-spacing:-.01em;}
+  .card p{font-size:14.5px;color:var(--muted);}
+  .card .num{
+    position:absolute;top:22px;right:26px;font-size:12px;font-weight:800;
+    color:rgba(255,255,255,.13);letter-spacing:.05em;
+  }
+
+  /* ---------- 进阶能力 ---------- */
+  .adv-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;}
+  .adv{
+    display:flex;gap:20px;padding:30px;border-radius:var(--radius);
+    background:linear-gradient(150deg,rgba(255,255,255,.05),rgba(255,255,255,.015));
+    border:1px solid var(--border);
+    transition:transform .3s,border-color .3s;
+  }
+  .adv:hover{transform:translateY(-5px);border-color:rgba(34,211,238,.38);}
+  .adv-icon{
+    width:46px;height:46px;border-radius:13px;flex:none;display:grid;place-items:center;
+    background:linear-gradient(135deg,rgba(34,211,238,.18),rgba(52,211,153,.1));
+    border:1px solid rgba(34,211,238,.28);
+  }
+  .adv-icon svg{width:22px;height:22px;stroke:#67e8f9;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+  .adv h3{font-size:17px;font-weight:700;margin-bottom:7px;letter-spacing:-.01em;}
+  .adv p{font-size:14.5px;color:var(--muted);}
+
+  /* ---------- 深入篇 ---------- */
+  .deep-wrap{display:grid;grid-template-columns:.85fr 1.15fr;gap:52px;align-items:center;}
+  .deep-list{display:flex;flex-direction:column;gap:14px;}
+  .deep-item{
+    display:flex;gap:16px;padding:22px 24px;border-radius:16px;
+    background:rgba(255,255,255,.035);border:1px solid var(--border);
+    transition:border-color .3s,background .3s,transform .3s;
+  }
+  .deep-item:hover{border-color:rgba(163,230,53,.35);background:rgba(163,230,53,.055);transform:translateX(5px);}
+  .deep-idx{
+    width:30px;height:30px;border-radius:9px;flex:none;display:grid;place-items:center;
+    font-size:13px;font-weight:800;color:#a3e635;
+    background:rgba(163,230,53,.12);border:1px solid rgba(163,230,53,.28);
+  }
+  .deep-item h4{font-size:15.5px;font-weight:700;margin-bottom:4px;}
+  .deep-item p{font-size:13.5px;color:var(--muted);}
+  .deep-note{
+    display:inline-flex;align-items:center;gap:8px;margin-bottom:18px;
+    font-size:12.5px;color:#fbbf24;
+    padding:6px 14px;border-radius:999px;
+    background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.28);
+  }
+
+  /* ---------- 手册目录 ---------- */
+  .toc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+  .toc{
+    padding:30px 26px;border-radius:var(--radius);
+    background:var(--panel);border:1px solid var(--border);
+    transition:border-color .3s,transform .3s;
+  }
+  .toc:hover{border-color:rgba(52,211,153,.4);transform:translateY(-4px);}
+  .toc-part{
+    display:inline-block;font-size:11.5px;font-weight:800;letter-spacing:.12em;
+    padding:5px 12px;border-radius:7px;margin-bottom:16px;
+  }
+  .p1{color:#6ee7b7;background:rgba(52,211,153,.13);border:1px solid rgba(52,211,153,.28);}
+  .p2{color:#67e8f9;background:rgba(34,211,238,.13);border:1px solid rgba(34,211,238,.28);}
+  .p3{color:#bef264;background:rgba(163,230,53,.13);border:1px solid rgba(163,230,53,.28);}
+  .toc h3{font-size:19px;font-weight:800;margin-bottom:18px;letter-spacing:-.02em;}
+  .toc ul{display:flex;flex-direction:column;gap:10px;}
+  .toc li{
+    font-size:14px;color:#c6d3cc;display:flex;gap:10px;
+    padding-bottom:10px;border-bottom:1px dashed rgba(255,255,255,.06);
+  }
+  .toc li:last-child{border-bottom:0;padding-bottom:0;}
+  .toc li b{color:var(--muted);font-weight:600;font-size:12.5px;flex:none;min-width:26px;}
+
+  /* ---------- 评价 ---------- */
+  .reviews{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+  .review{
+    padding:28px 26px;border-radius:var(--radius);
+    background:var(--panel);border:1px solid var(--border);
+    display:flex;flex-direction:column;gap:16px;
+    transition:transform .3s,border-color .3s;
+  }
+  .review:hover{transform:translateY(-5px);border-color:rgba(34,211,238,.34);}
+  .review p{font-size:15px;color:#d5e2db;}
+  .who{display:flex;align-items:center;gap:12px;margin-top:auto;}
+  .avatar{
+    width:42px;height:42px;border-radius:50%;display:grid;place-items:center;
+    font-weight:800;font-size:15px;color:#05120c;flex:none;
+  }
+  .who b{display:block;font-size:14px;}
+  .who small{color:var(--muted);font-size:12.5px;}
+  .q{font-size:34px;line-height:1;color:rgba(52,211,153,.35);font-weight:800;}
+
+  /* ---------- CTA ---------- */
+  .cta-box{
+    position:relative;text-align:center;padding:72px 38px;border-radius:30px;overflow:hidden;
+    background:linear-gradient(160deg,rgba(52,211,153,.15),rgba(34,211,238,.07));
+    border:1px solid rgba(52,211,153,.3);
+  }
+  .cta-box::before{
+    content:'';position:absolute;width:640px;height:640px;border-radius:50%;
+    background:radial-gradient(circle,rgba(52,211,153,.3),transparent 68%);
+    top:-340px;left:50%;transform:translateX(-50%);filter:blur(20px);
+  }
+  .cta-box > *{position:relative;}
+  .cta-box h2{margin-bottom:14px;}
+  .cta-box p{color:var(--muted);margin-bottom:32px;font-size:16.5px;}
+  .cta-actions{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;}
+  .cta-tip{margin-top:22px;font-size:12.5px;color:#5f7168;}
+
+  /* ---------- 页脚 ---------- */
+  footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:42px 0;margin-top:36px;}
+  .foot-inner{display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap;}
+  .foot-links{display:flex;gap:24px;font-size:14px;color:var(--muted);flex-wrap:wrap;}
+  .foot-links a:hover{color:var(--text);}
+  .copy{font-size:13px;color:#556660;}
+
+  /* ---------- 滚动动画 ---------- */
+  .reveal{opacity:0;transform:translateY(26px);transition:opacity .7s cubic-bezier(.22,1,.36,1),transform .7s cubic-bezier(.22,1,.36,1);}
+  .reveal.in{opacity:1;transform:none;}
+
+  /* ---------- 响应式 ---------- */
+  @media (max-width:980px){
+    .hero-grid{grid-template-columns:1fr;gap:58px;text-align:center;}
+    .hero p.lead{margin-inline:auto;}
+    .hero-actions,.trust{justify-content:center;}
+    .features{grid-template-columns:repeat(2,1fr);}
+    .deep-wrap{grid-template-columns:1fr;gap:36px;}
+    .toc-grid,.reviews{grid-template-columns:repeat(2,1fr);}
+    .phone{width:262px;height:534px;}
+  }
+  @media (max-width:860px){
+    .burger{display:flex;}
+    .nav-links{
+      position:absolute;top:100%;left:0;right:0;flex-direction:column;align-items:stretch;gap:4px;
+      background:rgba(8,17,13,.97);backdrop-filter:blur(20px);
+      padding:14px 24px 22px;border-bottom:1px solid var(--border);
+      display:none;
+    }
+    .nav-links.open{display:flex;}
+    .nav-links > a:not(.btn){padding:12px 0;border-bottom:1px solid rgba(255,255,255,.05);}
+    .nav-links .btn{margin-top:12px;justify-content:center;}
+    .nav-links .lang-btn{align-self:flex-start;margin-top:6px;}
+    .stats-grid{grid-template-columns:repeat(2,1fr);}
+    .adv-grid{grid-template-columns:1fr;}
+  }
+  @media (max-width:640px){
+    .container{width:calc(100% - 36px);}
+    section{padding:70px 0;}
+    .hero{padding:118px 0 56px;}
+    .features,.toc-grid,.reviews{grid-template-columns:1fr;}
+    .trust .sep{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<div class="glow glow-1"></div>
+<div class="glow glow-2"></div>
+<div class="glow glow-3"></div>
+
+<!-- ============ 导航 ============ -->
+<header class="nav" id="nav">
+  <div class="container nav-inner">
+    <a href="#" class="logo">
+      <span class="logo-mark">
+        <svg viewBox="0 0 24 24"><path d="M12 2.7s6 6.6 6 11a6 6 0 0 1-12 0c0-4.4 6-11 6-11z"/></svg>
+      </span>
+      <span data-zh="灌溉帮">Irrigang</span>
+    </a>
+    <nav class="nav-links" id="navLinks">
+      <button class="lang-btn" id="langToggle" aria-label="切换到中文">中文</button>
+      <a href="#features" data-zh="基础功能">Features</a>
+      <a href="#advanced" data-zh="进阶能力">Advanced</a>
+      <a href="#pro" data-zh="运维深入">Ops Tools</a>
+      <a href="#manual" data-zh="产品手册">Manual</a>
+      <a href="#download" class="btn btn-primary btn-sm" data-zh="立即下载">Download</a>
+    </nav>
+    <button class="burger" id="burger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<!-- ============ Hero ============ -->
+<section class="hero">
+  <div class="container hero-grid">
+    <div class="hero-copy">
+      <div class="pill">
+        <span class="dot-live"></span>
+        <span data-zh="智慧灌溉 · 一机掌控全场">Smart Irrigation · Full Control in One App</span>
+      </div>
+      <h1>
+        <span data-zh="让每一次灌溉">Make every watering</span><br>
+        <span class="grad" data-zh="都恰到好处">just right</span>
+      </h1>
+      <p class="lead" data-zh="灌溉帮把水泵、阀门、水位计、气象站装进你的手机。远程开关、批量控制、轮灌排程、自动联动——从一块田到一个农场群，都在你的指尖。">
+        Irrigang puts pumps, valves, water meters and weather stations in your phone. Remote switching, batch control, rotation schedules and automatic interlocks — from a single plot to an entire farm network, all at your fingertips.
+      </p>
+      <div class="hero-actions">
+        <a href="#download" class="btn btn-primary">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+          <span data-zh="免费下载 App">Download Free App</span>
+        </a>
+        <a href="#manual" class="btn btn-ghost" data-zh="查看产品手册">View Manual</a>
+      </div>
+      <div class="trust">
+        <span data-zh="支持 <b>LoRa / 4G / WiFi</b> 多种通讯">Supports <b>LoRa / 4G / WiFi</b></span>
+        <span class="sep"></span>
+        <span data-zh="兼容 <b>20+</b> 类灌溉设备">Works with <b>20+</b> device types</span>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <div class="phone">
+        <div class="screen">
+          <div class="s-top">
+            <span class="s-farm"><i></i><span data-zh="西岭果园 · 一号站">Xiling Orchard · Station 1</span></span>
+            <span>9:41</span>
+          </div>
+
+          <div class="ring">
+            <div class="ring-inner">
+              <div class="ring-val">68%</div>
+              <div class="ring-label" data-zh="土壤湿度">SOIL MOISTURE</div>
+            </div>
+          </div>
+
+          <div class="metrics">
+            <div class="metric"><b>24°</b><span data-zh="气温">Temp</span></div>
+            <div class="metric"><b>0.32</b><span data-zh="压力">Pressure</span></div>
+            <div class="metric"><b>82%</b><span data-zh="电量">Battery</span></div>
+          </div>
+
+          <div class="s-list">
+            <div class="s-item">
+              <span class="dot on"></span>
+              <span data-zh="1 号水泵">Pump 1</span>
+              <span class="tag on" data-zh="运行中">Running</span>
+            </div>
+            <div class="s-item">
+              <span class="dot on"></span>
+              <span data-zh="东区球阀">East Valve</span>
+              <span class="tag on" data-zh="开度 60%">Open 60%</span>
+            </div>
+            <div class="s-item">
+              <span class="dot off"></span>
+              <span data-zh="西区球阀">West Valve</span>
+              <span class="tag off" data-zh="已关闭">Closed</span>
+            </div>
+            <div class="s-item">
+              <span class="dot warn"></span>
+              <span data-zh="蓄水池水位">Tank Level</span>
+              <span class="tag off" data-zh="偏低">Low</span>
+            </div>
+          </div>
+
+          <div class="s-action" data-zh="一键启动轮灌任务">Start Rotation Task</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 数据条 ============ -->
+<div class="stats">
+  <div class="container">
+    <div class="stats-grid reveal">
+      <div class="stat"><b>20+</b><span data-zh="兼容设备类型">Compatible device types</span></div>
+      <div class="stat"><b>3</b><span data-zh="通讯方式自由切换">Communication modes</span></div>
+      <div class="stat"><b>7×24h</b><span data-zh="自动化任务值守">Automated monitoring</span></div>
+      <div class="stat"><b>&lt;1s</b><span data-zh="远程控制响应">Remote response</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 基础功能 ============ -->
+<section id="features">
+  <div class="container">
+    <div class="sec-head reveal">
+      <div class="sec-tag" data-zh="基础篇 · 从零上手">BASICS · START FROM ZERO</div>
+      <h2 data-zh="把农场，装进你的口袋">Your farm, in your pocket</h2>
+      <p data-zh="账号、设备、农场、消息、设置五步走完，任何人都能在十分钟内把灌溉系统接管起来。">
+        Account, devices, farms, messages and settings — five steps, and anyone can take over an irrigation system within ten minutes.
+      </p>
+    </div>
+
+    <div class="features">
+      <div class="card reveal">
+        <span class="num">01</span>
+        <div class="icon"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+        <h3 data-zh="账号与安全">Account &amp; Security</h3>
+        <p data-zh="注册、登录、修改昵称与密码、找回密码、切换账号与退出登录，全流程清晰可控。">
+          Sign up, log in, edit your nickname and password, recover access, switch accounts or sign out — every step is clear and controllable.
+        </p>
+      </div>
+
+      <div class="card reveal">
+        <span class="num">02</span>
+        <div class="icon"><svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="9" y1="6" x2="15" y2="6"/><line x1="9" y1="10" x2="15" y2="10"/></svg></div>
+        <h3 data-zh="设备注册与管理">Device Registration &amp; Management</h3>
+        <p data-zh="扫码或手动注册设备，统一管理设备列表、在线状态与基础参数。">
+          Register devices by scanning or manually, and manage the device list, online status and core parameters in one place.
+        </p>
+      </div>
+
+      <div class="card reveal">
+        <span class="num">03</span>
+        <div class="icon"><svg viewBox="0 0 24 24"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></div>
+        <h3 data-zh="设备远程控制">Remote Device Control</h3>
+        <p data-zh="开关水泵、调节阀门开度、查看实时数据，远程操作如同站在田间。">
+          Switch pumps on and off, adjust valve openings, read live data — remote operation feels like standing in the field.
+        </p>
+      </div>
+
+      <div class="card reveal">
+        <span class="num">04</span>
+        <div class="icon"><svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V9l7-5 7 5v12"/><path d="M9 21v-6h6v6"/></svg></div>
+        <h3 data-zh="农场创建与绑定">Farm Creation &amp; Binding</h3>
+        <p data-zh="为每个地块建立独立农场，把设备绑定到对应站点，管理关系一目了然。">
+          Create a separate farm for each plot, bind devices to the right station, and keep the relationships clear at a glance.
+        </p>
+      </div>
+
+      <div class="card reveal">
+        <span class="num">05</span>
+        <div class="icon"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></div>
+        <h3 data-zh="通知 · 提醒 · 告警">Notifications · Reminders · Alerts</h3>
+        <p data-zh="灌溉完成通知、定时任务提醒、设备异常告警，重要事件一条不漏。">
+          Irrigation completion notices, scheduled task reminders and device fault alerts — no important event goes missing.
+        </p>
+      </div>
+
+      <div class="card reveal">
+        <span class="num">06</span>
+        <div class="icon"><svg viewBox="0 0 24 24"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+        <h3 data-zh="批量控制与快捷操作">Batch Control &amp; Shortcuts</h3>
+        <p data-zh="一次选中多台设备批量执行，搜索框一键清空，常用入口直达不绕路。">
+          Select multiple devices and run them in one batch; clear the search box in one tap; reach frequent actions without detours.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 进阶能力 ============ -->
+<section id="advanced">
+  <div class="container">
+    <div class="sec-head reveal">
+      <div class="sec-tag" data-zh="进阶篇 · 让系统自己干活">ADVANCED · LET THE SYSTEM WORK</div>
+      <h2 data-zh="设好规则，剩下的交给它">Set the rules. It handles the rest.</h2>
+      <p data-zh="任务自动化、轮灌排程、成员协作、LoRa 组网——从“能远程”升级到“不用管”。">
+        Task automation, rotation scheduling, team collaboration and LoRa networking — upgrade from "remote control" to "no babysitting needed".
+      </p>
+    </div>
+
+    <div class="adv-grid">
+      <div class="adv reveal">
+        <div class="adv-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"/></svg></div>
+        <div>
+          <h3 data-zh="任务自动化">Task Automation</h3>
+          <p data-zh="按时间、湿度、水位等条件设定触发规则，灌溉任务自动执行，无需人工盯守。">
+            Set triggers by time, humidity, water level and more. Irrigation runs automatically, with no one watching.
+          </p>
+        </div>
+      </div>
+
+      <div class="adv reveal">
+        <div class="adv-icon"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-9-9"/><path d="M21 3v6h-6"/></svg></div>
+        <div>
+          <h3 data-zh="轮灌排程">Rotation Scheduling</h3>
+          <p data-zh="多区域按时段轮流灌溉，合理分配水压与水量，避免水泵超负荷运转。">
+            Zones irrigate in turn by time slot, spreading pressure and water volume evenly and keeping pumps off overload.
+          </p>
+        </div>
+      </div>
+
+      <div class="adv reveal">
+        <div class="adv-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <div>
+          <h3 data-zh="农场成员与转让">Farm Members &amp; Transfer</h3>
+          <p data-zh="邀请成员共同管理农场，分配权限；需要交接时，一键完成农场转让。">
+            Invite team members to manage the farm together with assigned permissions; hand over ownership in one tap when needed.
+          </p>
+        </div>
+      </div>
+
+      <div class="adv reveal">
+        <div class="adv-icon"><svg viewBox="0 0 24 24"><path d="M12 21s7-4.5 7-11a7 7 0 1 0-14 0c0 6.5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></div>
+        <div>
+          <h3 data-zh="位置信息管理">Location Management</h3>
+          <p data-zh="记录农场与站点坐标，在地图上直观呈现设备分布，巡检路线更清晰。">
+            Record farm and station coordinates, show device distribution on a map, and plan inspection routes more clearly.
+          </p>
+        </div>
+      </div>
+
+      <div class="adv reveal">
+        <div class="adv-icon"><svg viewBox="0 0 24 24"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v13"/></svg></div>
+        <div>
+          <h3 data-zh="设备分享 · 转让 · 注销">Share · Transfer · Deactivate</h3>
+          <p data-zh="把设备临时分享给他人使用，或转让给其他账号，报废设备可随时注销。">
+            Share a device temporarily, transfer it to another account, or deactivate retired equipment at any time.
+          </p>
+        </div>
+      </div>
+
+      <div class="adv reveal">
+        <div class="adv-icon"><svg viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0 1 14 0"/><path d="M8.5 16.1a6 6 0 0 1 7 0"/><path d="M2 8.82a15 15 0 0 1 20 0"/><circle cx="12" cy="20" r="1"/></svg></div>
+        <div>
+          <h3 data-zh="LoRa 组网配置">LoRa Network Setup</h3>
+          <p data-zh="注册 LoRa 设备并绑定网关，无网络覆盖的偏远地块也能稳定通讯。">
+            Register LoRa devices and bind gateways, so remote plots without network coverage still stay connected.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 深入篇 ============ -->
+<section id="pro">
+  <div class="container deep-wrap">
+    <div class="reveal">
+      <div class="deep-note">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <span data-zh="本章内容需要运维权限">Operations permission required</span>
+      </div>
+      <h2 style="text-align:left">
+        <span data-zh="为运维团队准备的">A deep toolkit built</span><br>
+        <span data-zh="深度工具箱">for ops teams</span>
+      </h2>
+      <p style="color:var(--muted);font-size:16px;margin-top:14px"
+         data-zh="批量导入、站点绑定、设备测试、代理登录、分体阀线路配置与水位联动——把现场实施与售后运维中最高频的操作，做成了可视化的标准流程。">
+        Bulk imports, station binding, device testing, proxy login, split-valve wiring and water-level interlocks — the highest-frequency field and after-sales operations turned into visual, standard workflows.
+      </p>
+      <a href="#download" class="btn btn-ghost" style="margin-top:28px" data-zh="申请运维权限">Request Ops Access</a>
+    </div>
+
+    <div class="deep-list reveal">
+      <div class="deep-item">
+        <span class="deep-idx">1</span>
+        <div>
+          <h4 data-zh="运维助手">Ops Assistant</h4>
+          <p data-zh="导入设备与站点、绑定站点设备、导入农场边界与坐标、解绑设备。">
+            Import devices and stations, bind station devices, import farm boundaries and coordinates, unbind devices.
+          </p>
+        </div>
+      </div>
+      <div class="deep-item">
+        <span class="deep-idx">2</span>
+        <div>
+          <h4 data-zh="设备测试与代理登录">Device Testing &amp; Proxy Login</h4>
+          <p data-zh="远程发起设备测试，定位通讯与执行问题；支持代理登录协助用户排查。">
+            Trigger remote device tests to locate communication or execution issues; proxy login helps users troubleshoot.
+          </p>
+        </div>
+      </div>
+      <div class="deep-item">
+        <span class="deep-idx">3</span>
+        <div>
+          <h4 data-zh="电动球阀设置">Motorized Valve Settings</h4>
+          <p data-zh="常用开度、记忆开度、压力显示与隐藏，以及分体阀的线路配置。">
+            Common opening, memory opening, pressure display toggle, and wiring configuration for split valves.
+          </p>
+        </div>
+      </div>
+      <div class="deep-item">
+        <span class="deep-idx">4</span>
+        <div>
+          <h4 data-zh="设备联动">Device Interlocks</h4>
+          <p data-zh="水位计与水泵自动启停联动，水位过低自动停机，保护设备也保护水源。">
+            Water-level meter and pump auto start/stop — pumps stop when the level drops, protecting equipment and water sources.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 手册目录 ============ -->
+<section id="manual">
+  <div class="container">
+    <div class="sec-head reveal">
+      <div class="sec-tag" data-zh="产品手册">PRODUCT MANUAL</div>
+      <h2 data-zh="从入门到运维，一本书讲透">From first login to field ops, in one guide</h2>
+      <p data-zh="手册按基础、进阶、深入三部分组织，按需查阅，快速定位你关心的那一节。">
+        The manual is organized into Basics, Advanced and In-depth, so you can jump straight to the section you need.
+      </p>
+    </div>
+
+    <div class="toc-grid">
+      <div class="toc reveal">
+        <span class="toc-part p1" data-zh="第一部分">PART I</span>
+        <h3 data-zh="基础篇">Basics</h3>
+        <ul>
+          <li><b data-zh="一">1</b><span data-zh="账号：获取、注册、登录">Account: get the app, sign up, log in</span></li>
+          <li><b data-zh="二">2</b><span data-zh="设备：注册、管理、控制">Devices: register, manage, control</span></li>
+          <li><b data-zh="三">3</b><span data-zh="农场：创建、绑定、批量控制">Farms: create, bind, batch control</span></li>
+          <li><b data-zh="四">4</b><span data-zh="消息：通知、提醒、告警">Messages: notifications, reminders, alerts</span></li>
+          <li><b data-zh="五">5</b><span data-zh="设置：昵称、密码、切换账号">Settings: nickname, password, switch account</span></li>
+          <li><b data-zh="六">6</b><span data-zh="快捷操作">Shortcuts</span></li>
+        </ul>
+      </div>
+
+      <div class="toc reveal">
+        <span class="toc-part p2" data-zh="第二部分">PART II</span>
+        <h3 data-zh="进阶篇">Advanced</h3>
+        <ul>
+          <li><b data-zh="一">1</b><span data-zh="任务自动化">Task automation</span></li>
+          <li><b data-zh="二">2</b><span data-zh="轮灌">Rotation irrigation</span></li>
+          <li><b data-zh="三">3</b><span data-zh="农场快捷设置">Farm shortcuts</span></li>
+          <li><b data-zh="四">4</b><span data-zh="成员邀请与农场转让">Member invites &amp; farm transfer</span></li>
+          <li><b data-zh="五">5</b><span data-zh="农场与站点位置信息">Farm and station location</span></li>
+          <li><b data-zh="六">6</b><span data-zh="设备分享、转让和注销">Device sharing, transfer &amp; deactivation</span></li>
+          <li><b data-zh="七">7</b><span data-zh="历史数据管理">Historical data</span></li>
+          <li><b data-zh="八">8</b><span data-zh="LoRa 设备配置">LoRa device configuration</span></li>
+          <li><b data-zh="九">9</b><span data-zh="切换设备类型">Switching device type</span></li>
+        </ul>
+      </div>
+
+      <div class="toc reveal">
+        <span class="toc-part p3" data-zh="第三部分">PART III</span>
+        <h3 data-zh="深入篇">In-depth</h3>
+        <ul>
+          <li><b data-zh="一">1</b><span data-zh="运维助手">Ops assistant</span></li>
+          <li><b data-zh="二">2</b><span data-zh="设备测试与代理登录">Device testing &amp; proxy login</span></li>
+          <li><b data-zh="三">3</b><span data-zh="电动球阀的设置">Motorized valve settings</span></li>
+          <li><b data-zh="四">4</b><span data-zh="设备的联动">Device interlocks</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 用户评价 ============ -->
+<section>
+  <div class="container">
+    <div class="sec-head reveal">
+      <div class="sec-tag" data-zh="用户声音">TESTIMONIALS</div>
+      <h2 data-zh="他们已经在用了">Already in the field</h2>
+    </div>
+
+    <div class="reviews">
+      <div class="review reveal">
+        <span class="q">"</span>
+        <p data-zh="以前浇地得来回跑，现在手机上把轮灌一开，几百亩地自动轮着浇。水位低了水泵自己停，省心太多了。">
+          I used to walk the fields to water. Now I start rotation irrigation on my phone and hundreds of acres run on their own. The pump stops itself when the level drops — so much less to worry about.
+        </p>
+        <div class="who">
+          <div class="avatar" style="background:linear-gradient(135deg,#34d399,#22d3ee)" data-zh="李">L</div>
+          <div>
+            <b data-zh="李建国">Li Jianguo</b>
+            <small data-zh="陕西 · 果园种植 300 亩">Shaanxi · 300-acre orchard</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="review reveal">
+        <span class="q">"</span>
+        <p data-zh="我们合作社十几个农场统一管理，成员各自登录管自己的地块，数据又能汇总到一起，权限分配很清楚。">
+          Our co-op manages a dozen farms. Members log in and run their own plots while all the data rolls up together — permissions are very clear.
+        </p>
+        <div class="who">
+          <div class="avatar" style="background:linear-gradient(135deg,#22d3ee,#a3e635)" data-zh="王">W</div>
+          <div>
+            <b data-zh="王秀兰">Wang Xiulan</b>
+            <small data-zh="山东 · 农业合作社负责人">Shandong · Co-op manager</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="review reveal">
+        <span class="q">"</span>
+        <p data-zh="做现场实施最怕一个个注册设备，运维助手里导入设备和站点后直接绑定，一天能干过去三天的活。">
+          Field commissioning used to mean registering devices one by one. With the ops assistant, I import devices and stations and bind them directly — a day now covers three days of work.
+        </p>
+        <div class="who">
+          <div class="avatar" style="background:linear-gradient(135deg,#a3e635,#34d399)" data-zh="张">Z</div>
+          <div>
+            <b data-zh="张工">Engineer Zhang</b>
+            <small data-zh="灌溉工程服务商">Irrigation service provider</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CTA ============ -->
+<section id="download">
+  <div class="container">
+    <div class="cta-box reveal">
+      <h2 data-zh="现在开始，<span class='grad'>让灌溉更省心</span>">Get started — <span class="grad">irrigation made easy</span></h2>
+      <p data-zh="下载灌溉帮 App，注册账号即可免费试用基础功能。">
+        Download Irrigang and sign up to try the core features for free.
+      </p>
+      <div class="cta-actions">
+        <a href="#" class="btn btn-primary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+          <span data-zh="iOS 下载">Download for iOS</span>
+        </a>
+        <a href="#" class="btn btn-ghost">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+          <span data-zh="Android 下载">Download for Android</span>
+        </a>
+      </div>
+      <div class="cta-tip" data-zh="运维权限及企业级部署，请联系我们获取专属方案">
+        Operations permission and enterprise deployment — contact us for a tailored plan.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 页脚 ============ -->
+<footer>
+  <div class="container foot-inner">
+    <a href="#" class="logo">
+      <span class="logo-mark">
+        <svg viewBox="0 0 24 24"><path d="M12 2.7s6 6.6 6 11a6 6 0 0 1-12 0c0-4.4 6-11 6-11z"/></svg>
+      </span>
+      <span data-zh="灌溉帮">Irrigang</span>
+    </a>
+    <nav class="foot-links">
+      <a href="#features" data-zh="功能">Features</a>
+      <a href="#manual" data-zh="手册">Manual</a>
+      <a href="#download" data-zh="下载">Download</a>
+      <a href="#" data-zh="隐私政策">Privacy Policy</a>
+      <a href="#" data-zh="联系我们">Contact Us</a>
+    </nav>
+    <div class="copy" data-zh="© 2026 灌溉帮 · 智慧灌溉管理平台">© 2026 Irrigang · Smart Irrigation Platform</div>
+  </div>
+</footer>
+
+<script>
+  /* ---------- 导航滚动样式 ---------- */
+  const nav = document.getElementById('nav');
+  const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 20);
+  onScroll();
+  window.addEventListener('scroll', onScroll, {passive:true});
+
+  /* ---------- 移动端菜单 ---------- */
+  const burger = document.getElementById('burger');
+  const navLinks = document.getElementById('navLinks');
+  burger.addEventListener('click', () => {
+    navLinks.classList.toggle('open');
+    burger.classList.toggle('active');
+  });
+  navLinks.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', () => navLinks.classList.remove('open'));
+  });
+
+  /* ---------- 语言切换（默认英文） ---------- */
+  const langToggle = document.getElementById('langToggle');
+  let currentLang = 'en';   // 页面初始为英文
+
+  function applyLang(lang){
+    document.querySelectorAll('[data-zh]').forEach(el => {
+      if (el.dataset.en === undefined) el.dataset.en = el.innerHTML;  // 首次切换时保存英文原文
+      el.innerHTML = (lang === 'en') ? el.dataset.en : el.dataset.zh;
+    });
+
+    document.documentElement.lang = (lang === 'en') ? 'en' : 'zh-CN';
+    document.title = (lang === 'en')
+      ? 'Irrigang — Make Every Watering Just Right'
+      : '灌溉帮 Irrigang — 让每一次灌溉都恰到好处';
+
+    langToggle.textContent = (lang === 'en') ? '中文' : 'EN';
+    langToggle.setAttribute('aria-label', lang === 'en' ? '切换到中文' : 'Switch to English');
+    currentLang = lang;
+  }
+
+  langToggle.addEventListener('click', () => {
+    applyLang(currentLang === 'en' ? 'zh' : 'en');
+  });
+
+  /* ---------- 滚动进场动画 ---------- */
+  const io = new IntersectionObserver(entries => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        setTimeout(() => e.target.classList.add('in'), i * 70);
+        io.unobserve(e.target);
+      }
+    });
+  }, {threshold: 0.12, rootMargin: '0px 0px -40px 0px'});
+
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+</script>
+
+</body>
+</html>
